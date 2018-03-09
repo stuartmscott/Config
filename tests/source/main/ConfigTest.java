@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -28,6 +30,12 @@ public class ConfigTest {
 	}
 
 	@Test(timeout=1000)
+	public void getAll() {
+		Config config = new Config();
+		Assert.assertTrue(config.getAll(KEY1).isEmpty());
+	}
+
+	@Test(timeout=1000)
 	public void put() {
 		Config config = new Config();
 		// Insert
@@ -40,6 +48,9 @@ public class ConfigTest {
 		Assert.assertEquals(VALUE2, config.get(KEY1));
 		config.put(KEY2 + "=" + VALUE1);
 		Assert.assertEquals(VALUE1, config.get(KEY2));
+		// Retrieve all
+		Set<Entry<String, String>> entries = config.getAll("k");
+		Assert.assertEquals(2, entries.size());
 	}
 
 	@Test(timeout=1000)

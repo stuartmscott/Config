@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -87,8 +90,24 @@ public class Config {
         }
         return value;
     }
+    public Set<Entry<String, String>> getAll(String prefix) {
+        Set<Entry<String, String>> entries = new HashSet<>();
+        if (parent != null) {
+            entries.addAll(parent.getAll(prefix));
+        }
+        for (Entry<String, String> e : configs.entrySet()) {
+            if (e.getKey().startsWith(prefix)) {
+                entries.add(e);
+            }
+        }
+        return entries;
+    }
     public boolean getBoolean(String key) {
-        return Boolean.parseBoolean(get(key));
+        try {
+            return Boolean.parseBoolean(get(key));
+        } catch (Exception e) {
+            return Boolean.parseBoolean(get(key, new HashSet<>(Arrays.asList("true", "false"))));
+        }
     }
     public Config put(String line) {
         String[] parts = line.split("=");
