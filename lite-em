@@ -14,5 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO error if match,junit,mockito or any other libraries don't exist
-java -cp libraries/Config.jar:libraries/Match-0.3.jar main.Match root=.
+CONFIG_JAR="libraries/Config-0.1.jar"
+MATCH_JAR="libraries/Match-0.3.jar"
+
+if [ ! -f "$CONFIG_JAR" ]; then
+    curl -L https://github.com/stuartmscott/Config/releases/download/v0.1/Config-0.1.jar -o $CONFIG_JAR
+fi
+
+if [ ! -f "$MATCH_JAR" ]; then
+    curl -L https://github.com/stuartmscott/Match/releases/download/v0.3/Match-0.3.jar -o $MATCH_JAR
+fi
+
+java -cp $CONFIG_JAR:$MATCH_JAR main.Match root=.
