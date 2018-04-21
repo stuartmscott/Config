@@ -1,4 +1,6 @@
-# Config
+Config
+======
+
 Interactive Nestable Map
 
 ## Build

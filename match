@@ -39,13 +39,13 @@ JavaJar(
         directory = "source"
         pattern = ".*.java"
     )
-    main_class = "main.Config"
+    main_class = "config.Config"
 )
 
 JavaJar(
     name = "ConfigTest"
     source = Find("tests/source")
-    main_class = "main.ConfigTest"
+    main_class = "config.ConfigTest"
     library = [
         "Config"
         "junit"
@@ -60,15 +60,12 @@ JavaJUnit(
         "ConfigTest"
         "Config"
     ]
-    main_class = "main.ConfigTest"
+    main_class = "config.ConfigTest"
 )
 
-Zip(
-    #name = DateTimeStamp("Config")
-    name = "ConfigDist"
-    source = [
-        #Find("scripts")
-        GetFile("Config")
-        GetFile("ConfigTestResult")
-    ]
+Release(
+    source = "Config"
+    version = "0.1"
+    extension = "jar"
+    channel = "cp %s $HOME/match/libraries/"
 )

@@ -1,4 +1,4 @@
-package main;
+package config;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,6 +19,9 @@ public class ConfigTest {
 	public static final String KEY2 = "key2";
 	public static final String VALUE1 = "value1";
 	public static final String VALUE2 = "value2";
+
+	public static final String QUERY1 = "?<" + KEY1 + ">";
+	public static final String QUERY2 = "?<" + KEY2 + ">";
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -117,6 +120,12 @@ public class ConfigTest {
 	}
 
 	@Test(timeout=1000)
+	public void hasBoolean() {
+		Config config = new Config();
+		Assert.assertFalse(config.hasBoolean(KEY1));
+	}
+
+	@Test(timeout=1000)
 	public void getBoolean() {
 		Config config = new Config();
 		Assert.assertFalse(config.getBoolean(KEY1));
@@ -127,7 +136,45 @@ public class ConfigTest {
 		Config config = new Config();
 		config.put(KEY1);
 		Assert.assertTrue(config.getBoolean(KEY1));
+		config.put(KEY2 + "=true");
+		Assert.assertTrue(config.getBoolean(KEY2));
 		config.put(KEY2 + "=false");
 		Assert.assertFalse(config.getBoolean(KEY2));
+	}
+
+	@Test(timeout=1000)
+	public void hasNumber() {
+		Config config = new Config();
+		Assert.assertFalse(config.hasNumber(KEY1));
+	}
+
+	@Test(timeout=1000)
+	public void getNumber() {
+		Config config = new Config();
+		Assert.assertEquals(0.0, config.getNumber(KEY1), 0.0);
+	}
+
+	@Test(timeout=1000)
+	public void putNumber() {
+		Config config = new Config();
+		config.put(KEY1);
+		Assert.assertEquals(0.0, config.getNumber(KEY1), 0.0);
+		config.put(KEY1, 123456);
+		Assert.assertEquals(123456, config.getNumber(KEY1), 00);
+		config.put(KEY2 + "=123");
+		Assert.assertEquals(123, config.getNumber(KEY2), 00);
+		config.put(KEY2 + "=.456");
+		Assert.assertEquals(.456, config.getNumber(KEY2), 00);
+	}
+
+	@Test(timeout=1000)
+	public void lookup() {
+		Config parent = new Config();
+		parent.put("Q1", QUERY1);
+		parent.put("Q2", QUERY2);
+		Config config = new Config(parent);
+		config.put(KEY1, VALUE1);
+		Assert.assertEquals(VALUE1, config.get("Q1"));
+		Assert.assertEquals(QUERY2, config.get("Q2"));
 	}
 }
