@@ -17,17 +17,35 @@ public class Config {
     * Creates a new config with the given args.
     */
     public static Config create(String... args) {
-        return create(args, null, null, null, null);
+        return create(args, null);
+    }
+    /**
+    * Creates a new config with the given files.
+    */
+    public static Config create(File... files) {
+        return create(null, files);
+    }
+    /**
+    * Creates a new config with the given args and files.
+    */
+    public static Config create(String[] args, File[] files) {
+        return create(args, files, null);
+    }
+    /**
+    * Creates a new config with the given args, files, and parent.
+    */
+    public static Config create(String[] args, File[] files, Config parent) {
+        return create(args, files, parent, null, null);
     }
     /**
     * Creates a new config with the given args, files, parent, input-, and output-streams.
     */
-    public static Config create(String[] args, String[] files, Config parent, InputStream i, OutputStream o) {
+    public static Config create(String[] args, File[] files, Config parent, InputStream i, OutputStream o) {
         final Config config = new Config(parent, i, o);
         config.put(args);
         if (files != null) for (int a = 0; a < files.length; a++) {
             try {
-                final FileInputStream file = new FileInputStream(new File(files[a]));
+                final FileInputStream file = new FileInputStream(files[a]);
                 String line;
                 while ((line = readLine(file)) != null) {
                     config.put(line);
@@ -70,6 +88,8 @@ public class Config {
     }
     /**
     * Creates an config with the given parent, input-, and output-stream.
+    *
+    * Streams allow the config to request values for missing keys.
     */
     public Config(Config parent, InputStream in, OutputStream out) {
         this.parent = parent;
@@ -181,7 +201,7 @@ public class Config {
     *
     * Look ups start with an '?' and use arrow brackets for arguments:
     *
-    *   !Hello <name>
+    *   ?Hello <name>
     *
     *   Config c = new Config();
     *   c.put("name", "Alice");

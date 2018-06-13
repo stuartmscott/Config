@@ -39,13 +39,13 @@ JavaJar(
         directory = "source"
         pattern = ".*.java"
     )
-    main_class = "config.Config"
+    main-class = "config.Config"
 )
 
 JavaJar(
     name = "ConfigTest"
     source = Find("tests/source")
-    main_class = "config.ConfigTest"
+    main-class = "config.ConfigTest"
     library = [
         "Config"
         "junit"
@@ -60,7 +60,7 @@ JavaJUnit(
         "ConfigTest"
         "Config"
     ]
-    main_class = "config.ConfigTest"
+    main-class = "config.ConfigTest"
 )
 
 Release(

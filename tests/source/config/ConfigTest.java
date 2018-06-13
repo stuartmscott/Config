@@ -70,15 +70,12 @@ public class ConfigTest {
 	@Test(timeout=1000)
 	public void files() throws Exception {
 		File file = folder.newFile("test");
-		String[] files = new String[] {
-			file.getAbsolutePath()
-		};
 		PrintWriter out = new PrintWriter(file);
 		out.write(KEY1 + "=" + VALUE1 + "\n");
 		out.write(KEY2 + "=" + VALUE2 + "\n");
 		out.flush();
 		out.close();
-		Config config = Config.create(null, files, null, null, null);
+		Config config = Config.create(file);
 		Assert.assertEquals(VALUE1, config.get(KEY1));
 		Assert.assertEquals(VALUE2, config.get(KEY2));
 	}
@@ -160,11 +157,11 @@ public class ConfigTest {
 		config.put(KEY1);
 		Assert.assertEquals(0.0, config.getNumber(KEY1), 0.0);
 		config.put(KEY1, 123456);
-		Assert.assertEquals(123456, config.getNumber(KEY1), 00);
+		Assert.assertEquals(123456, config.getNumber(KEY1), 0.0);
 		config.put(KEY2 + "=123");
-		Assert.assertEquals(123, config.getNumber(KEY2), 00);
+		Assert.assertEquals(123, config.getNumber(KEY2), 0.0);
 		config.put(KEY2 + "=.456");
-		Assert.assertEquals(.456, config.getNumber(KEY2), 00);
+		Assert.assertEquals(.456, config.getNumber(KEY2), 0.0);
 	}
 
 	@Test(timeout=1000)
