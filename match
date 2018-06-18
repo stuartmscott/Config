@@ -68,4 +68,5 @@ Release(
     version = "0.1"
     extension = "jar"
     channel = "cp %s $HOME/match/libraries/"
+    await = "ConfigTestResult"
 )
