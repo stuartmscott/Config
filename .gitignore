@@ -1,7 +1,8 @@
 *.class
 .classpath
-.metadata/
+.DS_Store
 .project
+.metadata
 libraries
 out
 private
