@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -28,52 +30,56 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Config {
+
     /**
-    * Creates a new config with the given args.
-    */
+     * Creates a new config with the given args.
+     */
     public static Config create(String... args) {
         return create(args, null);
     }
+
     /**
-    * Creates a new config with the given files.
-    */
+     * Creates a new config with the given files.
+     */
     public static Config create(File... files) {
         return create(null, files);
     }
+
     /**
-    * Creates a new config with the given args and files.
-    */
+     * Creates a new config with the given args and files.
+     */
     public static Config create(String[] args, File[] files) {
         return create(args, files, null);
     }
+
     /**
-    * Creates a new config with the given args, files, and parent.
-    */
+     * Creates a new config with the given args, files, and parent.
+     */
     public static Config create(String[] args, File[] files, Config parent) {
         return create(args, files, parent, null, null);
     }
+
     /**
-    * Creates a new config with the given args, files, parent, input-, and output-streams.
-    */
+     * Creates a new config with the given args, files, parent, input-, and output-streams.
+     */
     public static Config create(String[] args, File[] files, Config parent, InputStream i, OutputStream o) {
         final Config config = new Config(parent, i, o);
         config.put(args);
-        if (files != null) for (int a = 0; a < files.length; a++) {
-            try {
-                final FileInputStream file = new FileInputStream(files[a]);
-                String line;
-                while ((line = readLine(file)) != null) {
-                    config.put(line);
+        if (files != null) {
+            for (int a = 0; a < files.length; a++) {
+                try {
+                    config.readAllLines(files[a]);
+                } catch (Exception e) {
+                    System.err.println("Config Error: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                System.err.println("Config Error: " + e.getMessage());
             }
         }
         return config;
     }
+
     /**
-    * Reads a line from the given inputstream.
-    */
+     * Reads a line from the given inputstream.
+     */
     public static String readLine(InputStream in) throws Exception {
         StringBuilder sb = new StringBuilder();
         for (int i = in.read(); i != -1 && i != '\n'; i = in.read()) {
@@ -84,36 +90,43 @@ public class Config {
         }
         return null;
     }
+
     // TODO consider Map<ByteString, ByteString>
     private final Map<String, String> configs = new ConcurrentHashMap<>();
     private final Config parent;
     private final InputStream in;
     private final OutputStream out;
+
     /**
-    * Creates an empty config.
-    */
+     * Creates an empty config.
+     */
     public Config() {
         this(null, null, null);
     }
+
     /**
-    * Creates an config with the given parent.
-    */
+     * Creates an config with the given parent.
+     */
     public Config(Config parent) {
         this(parent, null, null);
     }
+
     /**
-    * Creates an config with the given parent, input-, and output-stream.
-    *
-    * Streams allow the config to request values for missing keys.
-    */
+     * Creates an config with the given parent, input-, and output-stream.
+     *
+     * <p>
+     * Streams allow the config to request values for missing keys.
+     * </p>
+     */
     public Config(Config parent, InputStream in, OutputStream out) {
         this.parent = parent;
         this.in = in;
         this.out = out;
     }
+
     /**
-    * Returns true iff this config or its hierarchy has the given key.
-    */
+     * Returns true iff this config or its hierarchy has the given key.
+     */
     public boolean has(String key) {
         if (configs.containsKey(key)) {
             return true;
@@ -123,42 +136,52 @@ public class Config {
         }
         return false;
     }
+
     /**
-    * Returns true iff key == "true"
-    * in this config or its hierarchy.
-    */
+     * Returns true iff key == "true"
+     * in this config or its hierarchy.
+     */
     public boolean hasBoolean(String key) {
         return has(key) && getBoolean(key);
     }
+
     /**
-    * Returns true iff key is mapped to a number,
-    * which can exist in a simple math equation,
-    * in this config or its hierarchy.
-    */
+     * Returns true iff key is mapped to a number,
+     * which can exist in a simple math equation,
+     * in this config or its hierarchy.
+     */
     public boolean hasNumber(String key) {
         return has(key) && getNumber(key) * 0 == 0;
     }
+
     /**
-    * Returns the value of the given key in this config or its hierarchy.
-    */
+     * Returns the value of the given key in this config or its hierarchy.
+     */
     public String get(String key) {
         return get(key, null);
     }
+
     /**
-    * Returns the value of the given key in this config or its hierarchy
-    * iff the set of options is null or the value is an element of the set.
-    */
+     * Returns the value of the given key in this config or its hierarchy
+     * iff the set of options is null or the value is an element of the set.
+     */
     public String get(String key, Set<String> options) {
         String value = configs.get(key);
         if (value == null || (options != null && !options.contains(value))) {
             if (parent == null) {
-                if (out != null) try {
-                    out.write(("Config: " + key + (options == null ? "?\n" : "? (" + options + ")\n")).getBytes());
-                    if (in != null) value = readLine(in);
-                    if (!key.equals("save") && value != null && hasBoolean("save")) {
-                        put(key, value);
+                if (out != null) {
+                    try {
+                        out.write(("Config: " + key + (options == null ? "?\n" : "? (" + options + ")\n")).getBytes());
+                        if (in != null) {
+                            value = readLine(in);
+                        }
+                        if (!key.equals("save") && value != null && hasBoolean("save")) {
+                            put(key, value);
+                        }
+                    } catch (Exception e) {
+                        /* ignored */
                     }
-                } catch (Exception e) {/* ignored */}
+                }
             } else {
                 value = parent.get(key, options);
             }
@@ -168,9 +191,22 @@ public class Config {
         }
         return value;
     }
+
     /**
-    * Returns a new set of all key/value pairs where key matches the given prefix.
-    */
+     * Returns a new set of all key/value pairs in this config.
+     */
+    public Set<Entry<String, String>> getAll() {
+        Set<Entry<String, String>> entries = new HashSet<>();
+        if (parent != null) {
+            entries.addAll(parent.getAll());
+        }
+        entries.addAll(configs.entrySet());
+        return entries;
+    }
+
+    /**
+     * Returns a new set of all key/value pairs where key matches the given prefix.
+     */
     public Set<Entry<String, String>> getAll(String prefix) {
         Set<Entry<String, String>> entries = new HashSet<>();
         if (parent != null) {
@@ -183,9 +219,10 @@ public class Config {
         }
         return entries;
     }
+
     /**
-    * Returns true iff the given key == "true".
-    */
+     * Returns true iff the given key == "true".
+     */
     public boolean getBoolean(String key) {
         try {
             return Boolean.parseBoolean(get(key));
@@ -197,9 +234,10 @@ public class Config {
             }
         }
     }
+
     /**
-    * Returns the double parsed from the value with the given key.
-    */
+     * Returns the double parsed from the value with the given key.
+     */
     public double getNumber(String key) {
         try {
             return Double.parseDouble(get(key));
@@ -211,22 +249,23 @@ public class Config {
             }
         }
     }
+
     /**
-    * Looks up the given query and returns it as an actualized string.
-    *
-    * Look ups start with an '?' and use arrow brackets for arguments:
-    *
-    *   ?Hello <name>
-    *
-    *   Config c = new Config();
-    *   c.put("name", "Alice");
-    *   ...
-    *   c.put("lookup=?Hello <name>");
-    *   out.println(c.get("lookup"));
-    *
-    *   Hello Alice
-    *
-    */
+     * Looks up the given query and returns it as an actualized string.
+     *
+     * <pre>
+     * {@code
+     * Look ups start with an '?' and use arrow brackets for arguments:
+     *   ?Hello &lt;name&gt;
+     *   Config c = new Config();
+     *   c.put("name", "Alice");
+     *   ...
+     *   c.put("lookup=?Hello &lt;name&gt;");
+     *   out.println(c.get("lookup"));
+     *   Hello Alice
+     * }
+     * </pre>
+     */
     public String lookup(String query) {
         if (query == null || !query.startsWith("?")) {
             return query;
@@ -239,6 +278,7 @@ public class Config {
         }
         return result;
     }
+
     private String parseLookup(String lookup) {
         int startIndex = lookup.indexOf('<');
         int endIndex = lookup.indexOf('>');
@@ -263,33 +303,40 @@ public class Config {
         String r = sb.toString();
         return r;
     }
+
     /**
-    * Parses the given array of lines into a key/value pairs.
-    * Puts the key/value pairs into this config.
-    * Returns itself for convenient chaining.
-    */
+     * Parses the given array of lines into a key/value pairs.
+     * Puts the key/value pairs into this config.
+     * Returns itself for convenient chaining.
+     */
     public Config put(String[] lines) {
-        if (lines != null) for (int l = 0; l < lines.length; l++) {
-            put(lines[l]);
+        if (lines != null) {
+            for (int l = 0; l < lines.length; l++) {
+                put(lines[l]);
+            }
         }
         return this;
     }
+
     /**
-    * Parses the given collection of lines into a key/value pairs.
-    * Puts the key/value pairs into this config.
-    * Returns itself for convenient chaining.
-    */
+     * Parses the given collection of lines into a key/value pairs.
+     * Puts the key/value pairs into this config.
+     * Returns itself for convenient chaining.
+     */
     public Config put(List<String> lines) {
-        if (lines != null) for (String l : lines) {
-            put(l);
+        if (lines != null) {
+            for (String l : lines) {
+                put(l);
+            }
         }
         return this;
     }
+
     /**
-    * Parses the given line into a key/value pair.
-    * Puts the key/value pair into this config.
-    * Returns itself for convenient chaining.
-    */
+     * Parses the given line into a key/value pair.
+     * Puts the key/value pair into this config.
+     * Returns itself for convenient chaining.
+     */
     public Config put(String line) {
         // TODO consider using first index of '=' so values containing '=' aren't split
         // int index = line.indexOf('=');
@@ -304,27 +351,102 @@ public class Config {
         }
         return this;
     }
+
     /**
-    * Puts the key/value pair into this config.
-    * Returns itself for convenient chaining.
-    */
+     * Puts the key/value pair into this config.
+     * Returns itself for convenient chaining.
+     */
     public Config put(Object key, Object value) {
         return put(key.toString(), value.toString());
     }
+
     /**
-    * Puts the key/value pair into this config.
-    * Returns itself for convenient chaining.
-    */
+     * Puts the key/value pair into this config.
+     * Returns itself for convenient chaining.
+     */
     public Config put(String key, String value) {
         if (!key.isEmpty()) {
             configs.put(key, value);
         }
         return this;
     }
+
     /**
-    * Returns a new config containing all of the given keys,
-    * and their associated values from this config.
-    */
+     * Reads all lines from the given File,
+     * and puts the key/value pairs into this config.
+     * Returns itself for convenient chaining.
+     */
+    public Config readAllLines(File file) throws Exception {
+        if (file.exists() && file.isFile() && file.canRead()) {
+            FileInputStream input = null;
+            try {
+                input = new FileInputStream(file);
+                readAllLines(input);
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (Exception e) {
+                        /* ignored */
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Reads all lines from the given InputStream,
+     * and puts the key/value pairs into this config.
+     * Returns itself for convenient chaining.
+     */
+    public Config readAllLines(InputStream input) throws Exception {
+        String line;
+        while ((line = readLine(input)) != null) {
+            put(line);
+        }
+        return this;
+    }
+
+    /**
+     * Writes all key/value pairs in this config to the given File.
+     * Returns itself for convenient chaining.
+     */
+    public Config writeAllLines(File file) throws Exception {
+        FileOutputStream output = null;
+        try {
+            output = new FileOutputStream(file);
+            writeAllLines(output);
+        } finally {
+            if (output != null) {
+                try {
+                    output.flush();
+                    output.close();
+                } catch (Exception e) {
+                    /* ignored */
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Writes all key/value pairs in this config lines to the given OutputStream.
+     * Returns itself for convenient chaining.
+     */
+    public Config writeAllLines(OutputStream output) throws Exception {
+        for (Entry<String, String> e : getAll()) {
+            for (char c : String.format("%s=%s\n", e.getKey(), e.getValue()).toCharArray()) {
+                output.write((int) c);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Returns a new config containing all of the given keys,
+     * and their associated values from this config.
+     */
     public Config copy(String... keys) {
         Config c = new Config();
         for (String k : keys) {
@@ -334,6 +456,7 @@ public class Config {
         }
         return c;
     }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(super.toString());
