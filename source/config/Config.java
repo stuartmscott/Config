@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -218,6 +219,17 @@ public class Config {
             }
         }
         return entries;
+    }
+
+    /**
+     * Returns a list of all entries in this config, in the format &lt;key&gt;=&lt;value&gt;.
+     */
+    public List<String> list() {
+        List<String> configs = new ArrayList<>();
+        for (Entry<String, String> config : getAll()) {
+            configs.add(String.format("%s=%s", config.getKey(), config.getValue()));
+        }
+        return configs;
     }
 
     /**

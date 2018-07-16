@@ -78,7 +78,7 @@ JavaJUnit(
 Release(
     source = "Config"
     channel = "cp %s $HOME/match/libraries/Config-0.1.jar"
-    await = [
+    require = [
         "ConfigCheckStyleResult"
         "ConfigTestResult"
     ]
