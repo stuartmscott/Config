@@ -350,16 +350,13 @@ public class Config {
      * Returns itself for convenient chaining.
      */
     public Config put(String line) {
-        // TODO consider using first index of '=' so values containing '=' aren't split
-        // int index = line.indexOf('=');
-        // if (index < 0) {
-        // } else {
-        // }
-        String[] parts = line.split("=");
-        if (parts.length == 1) {
-            put(parts[0], "true");
-        } else if (parts.length == 2) {
-            put(parts[0], parts[1]);
+        int index = line.indexOf('=');
+        if (index < 0) {
+            put(line, "true");
+        } else {
+            String key = line.substring(0, index);
+            String value = line.substring(index + 1, line.length());
+            put(key, value);
         }
         return this;
     }
