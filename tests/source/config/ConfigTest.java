@@ -44,19 +44,19 @@ public class ConfigTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void get() {
+    public void get() throws Exception {
         Config config = new Config();
         Assert.assertNull(config.get(KEY1));
     }
 
     @Test
-    public void getAll() {
+    public void getAll() throws Exception {
         Config config = new Config();
         Assert.assertTrue(config.getAll(KEY1).isEmpty());
     }
 
     @Test
-    public void put() {
+    public void put() throws Exception {
         Config config = new Config();
         // Insert
         config.put(KEY1, VALUE1);
@@ -74,7 +74,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void args() {
+    public void args() throws Exception {
         String[] args = {
             KEY1 + "=" + VALUE1,
             KEY2 + "=" + VALUE2
@@ -105,7 +105,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void hierarchy() {
+    public void hierarchy() throws Exception {
         Config parent = new Config();
         parent.put(KEY1, VALUE1);
 
@@ -117,7 +117,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void streams() {
+    public void streams() throws Exception {
         // Give 1 & 2
         String input = VALUE1 + "\n" + VALUE2 + "\n";
         ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes());
@@ -141,19 +141,19 @@ public class ConfigTest {
     }
 
     @Test
-    public void hasBoolean() {
+    public void hasBoolean() throws Exception {
         Config config = new Config();
         Assert.assertFalse(config.hasBoolean(KEY1));
     }
 
     @Test
-    public void getBoolean() {
+    public void getBoolean() throws Exception {
         Config config = new Config();
         Assert.assertFalse(config.getBoolean(KEY1));
     }
 
     @Test
-    public void putBoolean() {
+    public void putBoolean() throws Exception {
         Config config = new Config();
         config.put(KEY1);
         Assert.assertTrue(config.getBoolean(KEY1));
@@ -164,19 +164,19 @@ public class ConfigTest {
     }
 
     @Test
-    public void hasNumber() {
+    public void hasNumber() throws Exception {
         Config config = new Config();
         Assert.assertFalse(config.hasNumber(KEY1));
     }
 
     @Test
-    public void getNumber() {
+    public void getNumber() throws Exception {
         Config config = new Config();
         Assert.assertEquals(0.0, config.getNumber(KEY1), 0.0);
     }
 
     @Test
-    public void putNumber() {
+    public void putNumber() throws Exception {
         Config config = new Config();
         config.put(KEY1);
         Assert.assertEquals(0.0, config.getNumber(KEY1), 0.0);
@@ -189,7 +189,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void lookup() {
+    public void lookup() throws Exception {
         Config parent = new Config();
         parent.put("Q1", QUERY1);
         parent.put("Q2", QUERY2);

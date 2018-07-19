@@ -18,7 +18,9 @@ package config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -35,44 +37,45 @@ public class Config {
     /**
      * Creates a new config with the given args.
      */
-    public static Config create(String... args) {
-        return create(args, null);
+    public static Config create(String... args) throws IOException {
+        try {
+            return create(args, null);
+        } catch (FileNotFoundException fnfe) {
+            /* Will not happen */
+            return null;
+        }
     }
 
     /**
      * Creates a new config with the given files.
      */
-    public static Config create(File... files) {
+    public static Config create(File... files) throws FileNotFoundException, IOException {
         return create(null, files);
     }
 
     /**
      * Creates a new config with the given args and files.
      */
-    public static Config create(String[] args, File[] files) {
+    public static Config create(String[] args, File[] files) throws FileNotFoundException, IOException {
         return create(args, files, null);
     }
 
     /**
      * Creates a new config with the given args, files, and parent.
      */
-    public static Config create(String[] args, File[] files, Config parent) {
+    public static Config create(String[] args, File[] files, Config parent) throws FileNotFoundException, IOException {
         return create(args, files, parent, null, null);
     }
 
     /**
      * Creates a new config with the given args, files, parent, input-, and output-streams.
      */
-    public static Config create(String[] args, File[] files, Config parent, InputStream i, OutputStream o) {
+    public static Config create(String[] args, File[] files, Config parent, InputStream i, OutputStream o) throws FileNotFoundException, IOException {
         final Config config = new Config(parent, i, o);
         config.put(args);
         if (files != null) {
             for (int a = 0; a < files.length; a++) {
-                try {
-                    config.readAllLines(files[a]);
-                } catch (Exception e) {
-                    System.err.println("Config Error: " + e.getMessage());
-                }
+                config.readAllLines(files[a]);
             }
         }
         return config;
@@ -81,7 +84,7 @@ public class Config {
     /**
      * Reads a line from the given inputstream.
      */
-    public static String readLine(InputStream in) throws Exception {
+    public static String readLine(InputStream in) throws IOException {
         StringBuilder sb = new StringBuilder();
         for (int i = in.read(); i != -1 && i != '\n'; i = in.read()) {
             sb.append((char) i);
@@ -236,27 +239,31 @@ public class Config {
      * Returns true iff the given key == "true".
      */
     public boolean getBoolean(String key) {
-        try {
-            return Boolean.parseBoolean(get(key));
-        } catch (Exception e) {
-            try {
-                return Boolean.parseBoolean(get(key, new HashSet<>(Arrays.asList("true", "false"))));
-            } catch (Exception e2) {
-                return false;
-            }
+        String value = get(key);
+        if (value == null) {
+            return false;
         }
+        if (!value.equals("true") && !value.equals("false")) {
+            value = get(key, new HashSet<>(Arrays.asList("true", "false")));
+        }
+        return Boolean.parseBoolean(value);
     }
 
     /**
      * Returns the double parsed from the value with the given key.
      */
     public double getNumber(String key) {
+        String value = get(key);
+        if (value == null) {
+            return 0.0;
+        }
         try {
-            return Double.parseDouble(get(key));
-        } catch (Exception e) {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
             try {
-                return Double.parseDouble(get(key, new HashSet<>(Arrays.asList("-10.00", "0", "1.0", "200.", "300030.030003", ".."))));
-            } catch (Exception e2) {
+                value = get(key, new HashSet<>(Arrays.asList("-10.00", "0", "1.0", "200.", "300030.030003", "..")));
+                return Double.parseDouble(value);
+            } catch (NumberFormatException e2) {
                 return 0.0;
             }
         }
@@ -385,7 +392,7 @@ public class Config {
      * and puts the key/value pairs into this config.
      * Returns itself for convenient chaining.
      */
-    public Config readAllLines(File file) throws Exception {
+    public Config readAllLines(File file) throws FileNotFoundException, IOException {
         if (file.exists() && file.isFile() && file.canRead()) {
             FileInputStream input = null;
             try {
@@ -393,11 +400,7 @@ public class Config {
                 readAllLines(input);
             } finally {
                 if (input != null) {
-                    try {
-                        input.close();
-                    } catch (Exception e) {
-                        /* ignored */
-                    }
+                    input.close();
                 }
             }
         }
@@ -409,7 +412,7 @@ public class Config {
      * and puts the key/value pairs into this config.
      * Returns itself for convenient chaining.
      */
-    public Config readAllLines(InputStream input) throws Exception {
+    public Config readAllLines(InputStream input) throws IOException {
         String line;
         while ((line = readLine(input)) != null) {
             put(line);
@@ -421,19 +424,15 @@ public class Config {
      * Writes all key/value pairs in this config to the given File.
      * Returns itself for convenient chaining.
      */
-    public Config writeAllLines(File file) throws Exception {
+    public Config writeAllLines(File file) throws FileNotFoundException, IOException {
         FileOutputStream output = null;
         try {
             output = new FileOutputStream(file);
             writeAllLines(output);
         } finally {
             if (output != null) {
-                try {
-                    output.flush();
-                    output.close();
-                } catch (Exception e) {
-                    /* ignored */
-                }
+                output.flush();
+                output.close();
             }
         }
         return this;
@@ -443,7 +442,7 @@ public class Config {
      * Writes all key/value pairs in this config lines to the given OutputStream.
      * Returns itself for convenient chaining.
      */
-    public Config writeAllLines(OutputStream output) throws Exception {
+    public Config writeAllLines(OutputStream output) throws IOException {
         for (Entry<String, String> e : getAll()) {
             for (char c : String.format("%s=%s\n", e.getKey(), e.getValue()).toCharArray()) {
                 output.write((int) c);
