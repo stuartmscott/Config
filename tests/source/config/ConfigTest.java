@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -69,7 +69,7 @@ public class ConfigTest {
         config.put(KEY2 + "=" + VALUE1);
         Assert.assertEquals(VALUE1, config.get(KEY2));
         // Retrieve all
-        Set<Entry<String, String>> entries = config.getAll("k");
+        Map<String, String> entries = config.getAll("k");
         Assert.assertEquals(2, entries.size());
     }
 

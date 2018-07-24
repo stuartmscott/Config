@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -197,28 +198,28 @@ public class Config {
     }
 
     /**
-     * Returns a new set of all key/value pairs in this config.
+     * Returns a new map of all key/value pairs in this config.
      */
-    public Set<Entry<String, String>> getAll() {
-        Set<Entry<String, String>> entries = new HashSet<>();
+    public Map<String, String> getAll() {
+        Map<String, String> entries = new HashMap<>();
         if (parent != null) {
-            entries.addAll(parent.getAll());
+            entries.putAll(parent.getAll());
         }
-        entries.addAll(configs.entrySet());
+        entries.putAll(configs);
         return entries;
     }
 
     /**
-     * Returns a new set of all key/value pairs where key matches the given prefix.
+     * Returns a new map of all key/value pairs where key matches the given prefix.
      */
-    public Set<Entry<String, String>> getAll(String prefix) {
-        Set<Entry<String, String>> entries = new HashSet<>();
+    public Map<String, String> getAll(String prefix) {
+        Map<String, String> entries = new HashMap<>();
         if (parent != null) {
-            entries.addAll(parent.getAll(prefix));
+            entries.putAll(parent.getAll(prefix));
         }
         for (Entry<String, String> e : configs.entrySet()) {
             if (e.getKey().startsWith(prefix)) {
-                entries.add(e);
+                entries.put(e.getKey(), e.getValue());
             }
         }
         return entries;
@@ -229,7 +230,7 @@ public class Config {
      */
     public List<String> list() {
         List<String> configs = new ArrayList<>();
-        for (Entry<String, String> config : getAll()) {
+        for (Entry<String, String> config : getAll().entrySet()) {
             configs.add(String.format("%s=%s", config.getKey(), config.getValue()));
         }
         return configs;
@@ -443,7 +444,7 @@ public class Config {
      * Returns itself for convenient chaining.
      */
     public Config writeAllLines(OutputStream output) throws IOException {
-        for (Entry<String, String> e : getAll()) {
+        for (Entry<String, String> e : getAll().entrySet()) {
             for (char c : String.format("%s=%s\n", e.getKey(), e.getValue()).toCharArray()) {
                 output.write((int) c);
             }
