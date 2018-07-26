@@ -38,13 +38,8 @@ public class Config {
     /**
      * Creates a new config with the given args.
      */
-    public static Config create(String... args) throws IOException {
-        try {
-            return create(args, null);
-        } catch (FileNotFoundException fnfe) {
-            /* Will not happen */
-            return null;
-        }
+    public static Config create(String... args) {
+        return new Config().put(args);
     }
 
     /**
